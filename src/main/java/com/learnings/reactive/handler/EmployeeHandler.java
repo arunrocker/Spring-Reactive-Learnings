@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -40,5 +39,20 @@ public class EmployeeHandler {
 		long end = System.currentTimeMillis();
 		System.out.println("Execution Completed time"+(end-start));
 		return ServerResponse.ok().contentType(MediaType.TEXT_EVENT_STREAM).body(list,Employee.class);
+	}
+	public Mono<ServerResponse> getEmployeeId(ServerRequest request) {
+		String employeeId = request.pathVariable("input");
+		Mono<Employee> mono = null;
+		try {
+			mono = employeeDao.getEmployeeById(employeeId);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		return ServerResponse.ok().body(mono,Employee.class);
+	}
+	public Mono<ServerResponse> saveEmployee(ServerRequest request) {
+		Mono<Employee> mono = request.bodyToMono(Employee.class);
+		Flux<Employee> flux = employeeDao.saveEmployee(mono); 
+		return ServerResponse.ok().body(flux,Employee.class);
 	}
 }
